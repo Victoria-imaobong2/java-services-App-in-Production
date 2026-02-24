@@ -1,12 +1,23 @@
 #!/bin/bash
-set -e # Stops the script if any command fails
+set -e
+export MSYS_NO_PATHCONV=1
 
-aws --endpoint-url=http://localhost:4566 cloudformation delete-stack \
-    --stack-name patient-management
+export AWS_ACCESS_KEY_ID="test"
+export AWS_SECRET_ACCESS_KEY="test"
+export AWS_DEFAULT_REGION="us-east-1"
 
-aws --endpoint-url=http://localhost:4566 cloudformation deploy \
+ENDPOINT="http://localhost:4566"
+
+# Create bucket
+aws --endpoint-url=$ENDPOINT s3 mb s3://my-local-bucket || true
+
+# Upload template
+aws --endpoint-url=$ENDPOINT s3 cp "./cdk.out/localstack.template.json" s3://my-local-bucket/template.json
+
+# Deploy using create-stack (NOT deploy)
+aws --endpoint-url=$ENDPOINT cloudformation create-stack \
     --stack-name patient-management \
-    --template-file "./cdk.out/localstack.template.json"
+    --template-url http://localhost:4566/my-local-bucket/template.json \
+    --capabilities CAPABILITY_IAM
 
-aws --endpoint-url=http://localhost:4566 elbv2 describe-load-balancers \
-    --query "LoadBalancers[0].DNSName" --output text
+echo "Stack creation initiated."

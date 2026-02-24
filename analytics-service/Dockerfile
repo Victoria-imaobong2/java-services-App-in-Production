@@ -1,21 +1,11 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS builder
-
+# Stage 1: Build - Use JDK 21 to match your code
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
 
-COPY pom.xml .
-
-RUN mvn dependency:go-offline -B
-
-COPY src ./src
-
-RUN mvn clean package
-
-FROM eclipse-temurin:21-jre AS runner
-
+# Stage 2: Run - Use JRE 21 for a lean production image
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-
-COPY --from=builder ./app/target/analytics-service-0.0.1-SNAPSHOT.jar ./app.jar
-
-EXPOSE 4002
-
+COPY --from=build /app/target/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "app.jar"]

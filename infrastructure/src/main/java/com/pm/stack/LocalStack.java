@@ -38,7 +38,7 @@ import software.amazon.awscdk.services.rds.PostgresEngineVersion;
 import software.amazon.awscdk.services.rds.PostgresInstanceEngineProps;
 import software.amazon.awscdk.services.route53.CfnHealthCheck;
 
-public class LocalStack extends Stack {
+public class yLocalStack extends Stack {
   private final Vpc vpc;
   private final Cluster ecsCluster;
 
